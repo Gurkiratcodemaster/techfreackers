@@ -28,7 +28,7 @@ Informal money lending between friends, family, and small business owners is ext
 
 Existing banking and fintech solutions (banks, NBFCs, apps like KhataBook) either require heavy documentation/KYC, don't support peer-to-peer agreements, or lack any behavioural trust tracking.
 
-**Millions of small business owners and individuals have no safe, lightweight, and legally-structured way to lend money to people they know.**
+**Millions of small business owners and individuals have no safe, lightweight, and mutually-structured way to lend money to people they know.**
 
 ---
 
@@ -96,7 +96,7 @@ Existing banking and fintech solutions (banks, NBFCs, apps like KhataBook) eithe
 
 ### 🏅 Reputation Badge System (replaces "Trust Factor")
 - Tracks every repayment event: on-time, late, or missed
-- Badge tiers (e.g., Bronze → Silver → Gold → Platinum) based on repayment history
+- Badge tiers (e.g., Bronze → Silver → Gold → Platinum) based on repayment history points
 - Social proofs displayed on profile: *"This person has repaid 12 loans successfully"*
 - Badges are visible to lenders before approving any new loan request
 - **Trust score updates only when both parties confirm** — lender confirms money sent, borrower confirms money received
@@ -119,8 +119,8 @@ When a borrower misses a deadline, they receive an SMS with a link that takes th
   - 😅 I forgot
   - 🔄 Other
   - (Ignored / no response)
-- If "No money" is selected AND the lender has enabled the instalment option AND borrower has a good reputation badge:
-  - Penalty is applied (reputation impact)
+- If borrower missed the deadline and choosed any reason:
+  - Penalty is applied (badge points decreases)
   - Option to repay in instalments is offered
   - A new due date is assigned
 - If the new due date is also missed:
@@ -133,11 +133,12 @@ When a borrower misses a deadline, they receive an SMS with a link that takes th
 - Smart chain repayment notification: if A lent to B and B received repayment, A is notified — *"You received ₹X from B. You also owe ₹Y to C."*
 
 ### 📤 Loan Request Feature
-- Users can browse public lender profiles or send loan requests via mobile number
+- Free users can send loan request to only previously interacted users
+- Premium users can browse public lender profiles or send loan requests
 - **Daily request limit** per user to prevent spam
 
 ### 🌐 Freemium Model
-- Web app is free with ads
+- Web app is free from ads till limited agreements
 - Premium plan available (removes ads, adds advanced analytics, more storage)
 - Premium revenue covers: database hosting, SMS API costs, server costs
 
@@ -182,7 +183,7 @@ Pre-fills user info                                  (Download CTA + Web sign op
               Reviews Terms & Conditions
                              │
                              ▼
-                  Digitally Signs Agreement (DMA)
+                  Digital Mutual Agreement (DMA)
                              │
                   ┌──────────┴──────────┐
                   ▼                     ▼
@@ -246,7 +247,7 @@ Pre-fills user info                                  (Download CTA + Web sign op
 ## 💰 Economic Viability
 
 - **Free tier**: Supports basic lending with ads → zero barrier to entry
-- **Premium tier**: ₹999/month base (scales with usage) → removes ads, advanced analytics, higher SMS quota, priority support
+- **Premium tier**: ₹99/month base (scales with usage) → removes ads, advanced analytics, higher SMS quota, priority support
 - **Revenue sources**: Ad revenue (free users) + Premium subscriptions
 - **Cost coverage**: SMS API (Fast2SMS), Supabase database, Vercel + Railway hosting
 - **Scalable**: As user base grows, ad revenue scales; premium conversion expected from business owners who rely on the dashboard daily
