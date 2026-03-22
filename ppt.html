@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MoneyLend – HackMol 7.0 | Tech Freakers</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --navy:   #0D1128;
+    --navy2:  #131a35;
+    --navy3:  #1a2344;
+    --gold:   #F5A623;
+    --gold2:  #e8952a;
+    --white:  #FFFFFF;
+    --offwhite: #F0F4F8;
+    --muted:  #94A3B8;
+    --body:   #CBD5E1;
+    --green:  #16A34A;
+    --teal:   #0E7A90;
+    --red:    #E53935;
+    --purple: #7C3AED;
+    --orange: #EA580C;
+    --slide-w: 1280px;
+    --slide-h: 720px;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: #060a18;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--white);
+    overflow-x: hidden;
+  }
+
+  /* ── CONTROLS ── */
+  #controls {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    background: rgba(6,10,24,0.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(245,166,35,0.2);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 28px;
+    height: 52px;
+  }
+  #controls .brand {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem; font-weight: 700;
+    color: var(--gold); letter-spacing: 0.05em;
+  }
+  #controls .nav {
+    display: flex; align-items: center; gap: 10px;
+  }
+  #controls button {
+    background: var(--navy3); border: 1px solid rgba(245,166,35,0.35);
+    color: var(--white); padding: 5px 16px; border-radius: 6px;
+    font-family: 'DM Sans', sans-serif; font-size: 0.82rem;
+    cursor: pointer; transition: all 0.2s;
+  }
+  #controls button:hover { background: var(--gold); color: var(--navy); }
+  #slide-counter {
+    font-size: 0.82rem; color: var(--muted);
+    min-width: 70px; text-align: center;
+  }
+  #progress-bar {
+    position: fixed; top: 52px; left: 0; right: 0; height: 3px;
+    background: rgba(255,255,255,0.06); z-index: 999;
+  }
+  #progress-fill {
+    height: 100%; background: var(--gold);
+    transition: width 0.4s ease;
+  }
+
+  /* ── SLIDE CONTAINER ── */
+  #stage {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh; padding: 70px 20px 20px;
+  }
+
+  .slide {
+    width: var(--slide-w); height: var(--slide-h);
+    min-width: var(--slide-w); min-height: var(--slide-h);
+    display: none; position: relative; overflow: hidden;
+    border-radius: 4px;
+    box-shadow: 0 40px 120px rgba(0,0,0,0.7);
+  }
+  .slide.active { display: flex; animation: fadeIn 0.35s ease; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── TEMPLATE: LEFT PANEL + RIGHT CONTENT ── */
+  .left-panel {
+    width: 300px; min-width: 300px; height: 100%;
+    background: var(--navy);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    border-right: 1px solid rgba(245,166,35,0.15);
+    position: relative; padding: 30px 20px;
+  }
+  .left-panel::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:4px;
+    background: var(--gold);
+  }
+  .left-panel::after {
+    content:''; position:absolute; bottom:0; left:0; right:0; height:4px;
+    background: var(--gold);
+  }
+  .lp-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem; font-weight: 900; color: var(--gold);
+    text-align: center; line-height: 1.1; margin-bottom: 6px;
+  }
+  .lp-sub {
+    font-size: 0.72rem; color: var(--muted); text-align: center;
+    line-height: 1.5; margin-bottom: 28px;
+  }
+  .lp-icon { width: 90px; height: 90px; object-fit: contain; margin-bottom: 16px; }
+  .lp-divider {
+    width: 60%; height: 1px; background: rgba(245,166,35,0.3);
+    margin: 20px auto;
+  }
+  .lp-tag {
+    font-size: 0.65rem; color: var(--muted); text-align: center;
+    letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  .lp-hackmol {
+    position: absolute; bottom: 24px; left: 0; right: 0;
+    text-align: center;
+    background: var(--gold); color: var(--navy);
+    font-weight: 700; font-size: 0.75rem; padding: 7px;
+    letter-spacing: 0.1em;
+  }
+  .lp-team {
+    position: absolute; bottom: 60px; left: 0; right: 0;
+    text-align: center; font-size: 0.62rem; color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+
+  .right-panel {
+    flex: 1; height: 100%; background: var(--offwhite);
+    display: flex; flex-direction: column;
+    position: relative; overflow: hidden;
+  }
+
+  /* ── SLIDE HEADER ── */
+  .slide-header {
+    background: var(--navy); padding: 20px 36px 16px;
+    border-bottom: 3px solid var(--gold);
+    flex-shrink: 0;
+  }
+  .slide-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.2rem; font-weight: 700; color: var(--gold);
+    line-height: 1.1;
+  }
+  .slide-sub {
+    font-size: 0.78rem; color: var(--muted); margin-top: 3px;
+    letter-spacing: 0.03em;
+  }
+  .hackmol-tag {
+    position: absolute; top: 18px; right: 28px;
+    font-size: 0.7rem; font-weight: 700; color: var(--gold);
+    letter-spacing: 0.12em;
+  }
+
+  .slide-body {
+    flex: 1; padding: 22px 30px 14px;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ── FOOTER ── */
+  .slide-footer {
+    background: var(--navy); color: var(--muted);
+    font-size: 0.68rem; text-align: center; padding: 7px;
+    letter-spacing: 0.05em; flex-shrink: 0;
+  }
+
+  /* ── DARK SLIDE VARIANT (full dark) ── */
+  .slide-dark .right-panel { background: var(--navy2); }
+  .slide-dark .slide-header { background: var(--navy); }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--navy3); border-radius: 6px;
+    border-top: 3px solid var(--gold);
+    padding: 14px 16px; color: var(--white);
+  }
+  .card-light {
+    background: var(--white); border-radius: 6px;
+    border-left: 4px solid var(--gold);
+    padding: 12px 16px;
+  }
+  .card-stat {
+    background: var(--navy); border-radius: 6px;
+    border-top: 3px solid var(--gold);
+    padding: 18px 16px; text-align: center;
+    color: var(--white);
+  }
+  .stat-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.6rem; font-weight: 900; color: var(--gold);
+    line-height: 1;
+  }
+  .stat-label { font-size: 0.78rem; color: var(--muted); margin-top: 6px; line-height: 1.4; }
+
+  .card-title {
+    font-size: 0.88rem; font-weight: 700; color: var(--gold);
+    margin-bottom: 6px;
+  }
+  .card-title-dark {
+    font-size: 0.88rem; font-weight: 700; color: var(--navy);
+    margin-bottom: 5px;
+  }
+  .card-body { font-size: 0.76rem; color: var(--body); line-height: 1.55; }
+  .card-body-dark { font-size: 0.76rem; color: #334155; line-height: 1.55; }
+
+  .card-icon {
+    width: 32px; height: 32px; object-fit: contain;
+    margin-bottom: 8px;
+  }
+  .card-icon-sm { width: 24px; height: 24px; object-fit: contain; }
+
+  /* grids */
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; }
+
+  /* ── TECH STACK ROWS ── */
+  .tech-row {
+    background: var(--navy3); border-radius: 6px;
+    display: flex; align-items: center; gap: 14px;
+    padding: 11px 16px;
+    border-left: 4px solid var(--gold);
+  }
+  .tech-name { font-size: 1rem; font-weight: 700; color: var(--white); }
+  .tech-label { font-size: 0.68rem; color: var(--muted); }
+  .tech-desc { font-size: 0.74rem; color: var(--body); flex: 1; text-align: right; line-height: 1.4; }
+
+  /* ── WORKFLOW ── */
+  .flow-box {
+    background: var(--navy); border-radius: 6px;
+    border: 1.5px solid rgba(245,166,35,0.3);
+    padding: 10px 14px; text-align: center;
+    font-size: 0.75rem; font-weight: 600; color: var(--white);
+    position: relative;
+  }
+  .flow-box img { width: 26px; height: 26px; object-fit: contain; display: block; margin: 0 auto 6px; }
+  .flow-gold { border-color: var(--gold); background: rgba(245,166,35,0.1); }
+  .flow-green { border-color: var(--green); background: rgba(22,163,74,0.12); }
+  .flow-red   { border-color: var(--red);   background: rgba(229,57,53,0.12); }
+  .flow-teal  { border-color: var(--teal);  background: rgba(14,122,144,0.12); }
+  .flow-arrow {
+    display: flex; align-items: center; justify-content: center;
+    color: var(--gold); font-size: 1.1rem; font-weight: 700;
+  }
+  .flow-arrow-v { font-size: 1.2rem; color: var(--gold); text-align: center; }
+
+  /* ── HIGHLIGHT BAR ── */
+  .highlight-bar {
+    background: var(--navy); border-radius: 6px;
+    padding: 12px 20px; display: flex; align-items: center; gap: 10px;
+  }
+  .highlight-bar img { width: 22px; height: 22px; object-fit: contain; }
+  .highlight-bar span { font-size: 0.82rem; font-weight: 600; color: var(--white); }
+
+  /* ── SLIDE 1 SPECIFIC ── */
+  .member-card {
+    background: var(--navy3); border-radius: 6px;
+    border-top: 3px solid var(--gold);
+    padding: 12px 16px; text-align: center;
+    font-weight: 700; font-size: 0.85rem; color: var(--white);
+  }
+  .info-card {
+    background: #EBF4FF; border-radius: 6px;
+    padding: 12px 16px; display: flex; align-items: center; gap: 10px;
+  }
+  .info-card img { width: 22px; height: 22px; }
+  .info-card strong { font-size: 0.85rem; color: var(--navy); font-weight: 700; display: block; }
+  .info-card span   { font-size: 0.74rem; color: #64748B; }
+
+  /* ── REPAYMENT CHAIN ── */
+  .chain-box {
+    background: var(--navy); border-radius: 8px;
+    padding: 10px 16px; border-left: 4px solid var(--teal);
+    font-size: 0.78rem; color: var(--body); line-height: 1.6;
+  }
+
+  /* ── COMPARISON TABLE ── */
+  .compare-table { width: 100%; border-collapse: collapse; font-size: 0.76rem; }
+  .compare-table th {
+    background: var(--navy); color: var(--gold);
+    padding: 8px 12px; text-align: left; font-weight: 700;
+    border-bottom: 2px solid var(--gold);
+  }
+  .compare-table td {
+    padding: 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.06);
+    color: var(--navy); background: var(--white);
+  }
+  .compare-table tr:nth-child(even) td { background: #F8FAFC; }
+  .compare-table td.yes { color: var(--green); font-weight: 700; }
+  .compare-table td.no  { color: var(--red);   font-weight: 700; }
+  .compare-table td.hl  { background: rgba(245,166,35,0.08) !important; font-weight: 700; color: var(--navy); }
+
+  /* ── BADGE TIERS ── */
+  .badge-tier {
+    border-radius: 6px; padding: 10px 14px; text-align: center;
+    font-weight: 700; font-size: 0.82rem;
+  }
+  .tier-bronze  { background: #92400E; color: #FDE68A; }
+  .tier-silver  { background: #374151; color: #E5E7EB; }
+  .tier-gold    { background: #78350F; color: #FCD34D; }
+  .tier-platinum{ background: #1E3A5F; color: #BAE6FD; }
+
+  /* ── ROADMAP ── */
+  .roadmap-item {
+    display: flex; gap: 14px; align-items: flex-start;
+  }
+  .roadmap-dot {
+    width: 34px; height: 34px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem; font-weight: 700; flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  /* keyboard hint */
+  .key-hint {
+    position: fixed; bottom: 14px; right: 20px; z-index: 999;
+    font-size: 0.65rem; color: rgba(255,255,255,0.25); letter-spacing: 0.05em;
+  }
+</style>
+</head>
+<body>
+
+<!-- Controls -->
+<div id="controls">
+  <div class="brand">MoneyLend &nbsp;·&nbsp; HackMol 7.0</div>
+  <div class="nav">
+    <button onclick="prevSlide()">← Prev</button>
+    <span id="slide-counter">1 / 8</span>
+    <button onclick="nextSlide()">Next →</button>
+  </div>
+  <div style="font-size:0.72rem;color:var(--muted)">Team Tech Freakers</div>
+</div>
+<div id="progress-bar"><div id="progress-fill"></div></div>
+<div class="key-hint">← → Arrow keys to navigate</div>
+
+<div id="stage">
+
+<!-- ════════════════════════════════════════════════════════
+     SLIDE 1 — Team Details
+═════════════════════════════════════════════════════════ -->
+<div class="slide active" id="slide-1">
+  <div class="left-panel">
+    <img class="lp-icon" src="https://cdn-icons-png.flaticon.com/512/2271/2271050.png" alt="money" onerror="this.src='https://cdn-icons-png.flaticon.com/512/2910/2910768.png'"/>
+    <div class="lp-logo">MoneyLend</div>
+    <div class="lp-sub">Digital Mutual<br/>Agreement Platform</div>
+    <div class="lp-divider"></div>
+    <div class="lp-tag">Hackathon Project</div>
+    <div class="lp-team">Team Tech Freakers</div>
+    <div class="lp-hackmol">HACKMOL 7.0</div>
+  </div>
+  <div class="right-panel" style="background:var(--navy2);">
+    <div class="slide-header">
+      <div class="slide-title" style="color:var(--white);font-size:2.8rem;">Tech Freakers</div>
+      <div class="hackmol-tag">HACKMOL 7.0</div>
+    </div>
+    <div class="slide-body" style="gap:14px;display:flex;flex-direction:column;justify-content:center;">
+      <div class="grid-2" style="gap:10px;">
+        <div class="member-card">👤 Gurkirat Singh Lohat</div>
+        <div class="member-card">👤 Gurleen Kaur</div>
+        <div class="member-card">👤 Gagandeep Singh</div>
+        <div class="member-card">👤 Gurmannat Singh</div>
+      </div>
+      <div class="info-card" style="margin-top:6px;">
+        <img src="https://cdn-icons-png.flaticon.com/512/3665/3665923.png" alt="college" onerror="this.style.display='none'"/>
+        <div>
+          <strong>Guru Nanak Dev Engineering College, Ludhiana</strong>
+          <span>📍 Ludhiana, Punjab</span>
+        </div>
+      </div>
+      <div style="font-style:italic;font-size:0.76rem;color:var(--muted);margin-top:2px;">
+        NIT Jalandhar &nbsp;×&nbsp; Google Developer Groups
+      </div>
+    </div>
+    <div class="slide-footer">HACKMOL 7.0 × Google Developer Groups • NIT Jalandhar</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     SLIDE 2 — Problem Statement
+═════════════════════════════════════════════════════════ -->
+<div class="slide slide-dark" id="slide-2">
+  <div class="left-panel">
+    <img class="lp-icon" src="https://cdn-icons-png.flaticon.com/512/5261/5261964.png" alt="problem" onerror="this.style.display='none'"/>
+    <div class="lp-logo" style="font-size:1.6rem;">Problem<br/>Statement</div>
+    <div class="lp-sub">Why MoneyLend?</div>
+    <div class="lp-team">Team Tech Freakers</div>
+    <div class="lp-hackmol">HACKMOL 7.0</div>
+  </div>
+  <div class="right-panel">
+    <div class="slide-header">
+      <div class="slide-title">Problem Statement</div>
+      <div class="slide-sub">India's Informal Lending Crisis</div>
+      <div class="hackmol-tag">HACKMOL 7.0</div>
+    </div>
+    <div class="slide-body" style="gap:10px;">
+      <!-- Stats row -->
+      <div class="grid-3" style="gap:10px;flex-shrink:0;">
+        <div class="card-stat">
+          <div class="stat-num">₹14L Cr</div>
+          <div class="stat-label">Informal credit market in India</div>
+        </div>
+        <div class="card-stat">
+          <div class="stat-num">78%</div>
+          <div class="stat-label">Loans lack any documentation</div>
+        </div>
+        <div class="card-stat">
+          <div class="stat-num">#1</div>
+          <div class="stat-label">Cause of personal relationship disputes</div>
+        </div>
+      </div>
+      <!-- Problem cards -->
+      <div class="grid-2" style="flex:1;gap:8px;margin-top:4px;">
+        <div class="card-light" style="display:flex;gap:10px;align-items:flex-start;">
+          <img class="card-icon-sm" src="https://cdn-icons-png.flaticon.com/512/1828/1828843.png" alt="x" onerror="this.style.display='none'"/>
+          <div>
+            <div class="card-title-dark">No Proof of Agreement</div>
+            <div class="card-body-dark">Verbal loans leave zero documentation; disputes arise with no evidence.</div>
+          </div>
+        </div>
+        <div class="card-light" style="display:flex;gap:10px;align-items:flex-start;border-left-color:var(--orange);">
+          <img class="card-icon-sm" src="https://cdn-icons-png.flaticon.com/512/2716/2716612.png" alt="accountability" onerror="this.style.display='none'"/>
+          <div>
+            <div class="card-title-dark" style="color:var(--orange);">No Accountability</div>
+            <div class="card-body-dark">Borrowers delay or ignore payments with zero consequences.</div>
+          </div>
+        </div>
+        <div class="card-light" style="display:flex;gap:10px;align-items:flex-start;border-left-color:var(--purple);">
+          <img class="card-icon-sm" src="https://cdn-icons-png.flaticon.com/512/1534/1534959.png" alt="trust" onerror="this.style.display='none'"/>
+          <div>
+            <div class="card-title-dark" style="color:var(--purple);">No Trust System</div>
+            <div class="card-body-dark">Lenders can't know if someone has a history of repaying on time.</div>
+          </div>
+        </div>
+        <div class="card-light" style="display:flex;gap:10px;align-items:flex-start;border-left-color:var(--teal);">
+          <img class="card-icon-sm" src="https://cdn-icons-png.flaticon.com/512/893/893257.png" alt="reminder" onerror="this.style.display='none'"/>
+          <div>
+            <div class="card-title-dark" style="color:var(--teal);">Awkward Follow-Ups</div>
+            <div class="card-body-dark">Lenders personally chase borrowers, damaging relationships.</div>
+          </div>
+        </div>
+        <div class="card-light" style="display:flex;gap:10px;align-items:flex-start;border-left-color:var(--red);">
+          <img class="card-icon-sm" src="https://cdn-icons-png.flaticon.com/512/1791/1791961.png" alt="relationship" onerror="this.style.display='none'"/>
+          <div>
+            <div class="card-title-dark" style="color:var(--red);">Strained Relationships</div>
+            <div class="card-body-dark">Money disputes are the top reason friendships & families break.</div>
+          </div>
+        </div>
+        <div class="card-light" style="display:flex;gap:10px;align-items:flex-start;border-left-color:var(--muted);">
+          <img class="card-icon-sm" src="https://cdn-icons-png.flaticon.com/512/2830/2830284.png" alt="bank" onerror="this.style.display='none'"/>
+          <div>
+            <div class="card-title-dark" style="color:#475569;">Banks Don't Help</div>
+            <div class="card-body-dark">Formal banking is too heavy for small peer-to-peer informal loans.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">HACKMOL 7.0 × Google Developer Groups • NIT Jalandhar</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     SLIDE 3 — Proposed Solution
+═════════════════════════════════════════════════════════ -->
+<div class="slide slide-dark" id="slide-3">
+  <div class="left-panel">
+    <img class="lp-icon" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="solution" onerror="this.style.display='none'"/>
+    <div class="lp-logo" style="font-size:1.5rem;">Proposed<br/>Solution</div>
+    <div class="lp-sub">MoneyLend Platform</div>
+    <div class="lp-team">Team Tech Freakers</div>
+    <div class="lp-hackmol">HACKMOL 7.0</div>
+  </div>
+  <div class="right-panel">
+    <div class="slide-header">
+      <div class="slide-title">Proposed Solution</div>
+      <div class="slide-sub">Digital Mutual Agreement + Reputation Badge System</div>
+      <div class="hackmol-tag">HACKMOL 7.0</div>
+    </div>
+    <div class="slide-body" style="gap:10px;">
+      <div class="highlight-bar" style="margin-bottom:4px;flex-shrink:0;">
+        <img src="https://cdn-icons-png.flaticon.com/512/1020/1020338.png" alt="idea" style="width:20px;height:20px;" onerror="this.style.display='none'"/>
+        <span style="font-style:italic;font-weight:400;font-size:0.8rem;color:var(--body);">
+          MoneyLend — A cross-platform (Android + Web) Digital Mutual Agreement platform with a Reputation Badge System
+        </span>
+      </div>
+      <!-- 3 solution pillars -->
+      <div class="grid-3" style="flex:1;gap:10px;">
+        <div class="card" style="border-top-color:var(--gold);display:flex;flex-direction:column;gap:8px;">
+          <img class="card-icon" src="https://cdn-icons-png.flaticon.com/512/1183/1183672.png" alt="agreement" onerror="this.style.display='none'"/>
+          <div class="card-title">Digital Mutual Agreement (DMA)</div>
+          <div class="card-body">
+            › Lender creates agreement in app<br/>
+            › SMS sent to borrower via Fast2SMS<br/>
+            › Borrower signs via app or web<br/>
+            › Legally structured consent flow
+          </div>
+        </div>
+        <div class="card" style="border-top-color:var(--gold2);display:flex;flex-direction:column;gap:8px;">
+          <img class="card-icon" src="https://cdn-icons-png.flaticon.com/512/2583/2583248.png" alt="badge" onerror="this.style.display='none'"/>
+          <div class="card-title">Reputation Badge System</div>
+          <div class="card-body">
+            › Bronze → Silver → Gold → Platinum<br/>
+            › Tracks every repayment event<br/>
+            › Social proof: '12 loans repaid'<br/>
+            › Dual-confirm updates (both parties)
+          </div>
+        </div>
+        <div class="card" style="border-top-color:var(--teal);display:flex;flex-direction:column;gap:8px;">
+          <img class="card-icon" src="https://cdn-icons-png.flaticon.com/512/2150/2150213.png" alt="payment" onerror="this.style.display='none'"/>
+          <div class="card-title" style="color:var(--teal);">UPI Repayment & Smart Alerts</div>
+          <div class="card-body">
+            › Repay via UPI Deep Link on web<br/>
+            › Smart adaptive reminders<br/>
+            › Missed payment poll flow<br/>
+            › Chain payment notifications
+          </div>
+        </div>
+      </div>
+      <!-- vs existing -->
+      <div style="background:var(--navy);border-radius:6px;padding:10px 16px;flex-shrink:0;">
+        <div style="font-size:0.72rem;font-weight:700;color:var(--gold);margin-bottom:8px;">vs Existing Solutions</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+          <div style="font-size:0.73rem;">
+            <div style="font-weight:700;color:#94A3B8;margin-bottom:3px;">KhataBook</div>
+            <div style="color:#64748B;">Expense tracking only. No DMA, no trust, no flow.</div>
+          </div>
+          <div style="font-size:0.73rem;">
+            <div style="font-weight:700;color:#94A3B8;margin-bottom:3px;">Banks / NBFCs</div>
+            <div style="color:#64748B;">Heavy KYC, no peer-to-peer informal lending.</div>
+          </div>
+          <div style="font-size:0.73rem;">
+            <div style="font-weight:700;color:var(--gold);margin-bottom:3px;">MoneyLend ✅</div>
+            <div style="color:var(--body);">DMA + Reputation + SMS flow + UPI + Web fallback.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">HACKMOL 7.0 × Google Developer Groups • NIT Jalandhar</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     SLIDE 4 — Features
+═════════════════════════════════════════════════════════ -->
+<div class="slide slide-dark" id="slide-4">
+  <div class="left-panel">
+    <img class="lp-icon" src="https://cdn-icons-png.flaticon.com/512/3176/3176366.png" alt="features" onerror="this.style.display='none'"/>
+    <div class="lp-logo" style="font-size:1.8rem;">Key<br/>Features</div>
+    <div class="lp-sub">What MoneyLend does</div>
+    <div class="lp-team">Team Tech Freakers</div>
+    <div class="lp-hackmol">HACKMOL 7.0</div>
+  </div>
+  <div class="right-panel">
+    <div class="slide-header">
+      <div class="slide-title">Features of Solution</div>
+      <div class="slide-sub">Comprehensive Lending Lifecycle Management</div>
+      <div class="hackmol-tag">HACKMOL 7.0</div>
+    </div>
+    <div class="slide-body" style="gap:8px;">
+      <div class="grid-3" style="flex:1;gap:8px;">
+        <!-- Card 1 -->
+        <div class="card" style="border-top-color:var(--gold);display:flex;flex-direction:column;gap:6px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <img class="card-icon-sm" src="https://cdn-icons-png.flaticon.com/512/1183/1183672.png" alt="dma" onerror="this.style.display='none'"/>
+            <div class="card-title">DMA Signing Flow</div>
+          </div>
+          <div class="card-body">App deep link or web fallback. Auto-fetch user info. T&amp;C acceptance. Digital e-sign locks agreement.</div>
+        </div>
+        <!-- Card 2 -->
+        <div class="card" style="border-top-color:var(--gold);display:flex;flex-direction:column;gap:6px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <img class="card-icon-sm" src="https://cdn-icons-png.flaticon.com/512/2583/2583248.png" alt="badge" onerror="this.style.display='none'"/>
+            <div class="card-title">Reputation Badges</div>
+          </div>
+          <div class="card-body">4-tier badge system tracks repayment history. Social proofs like '12 loans repaid' build trust.</div>
+        </div>
+        <!-- Card 3 -->
+        <div class="card" style="border-top-color:var(--teal);display:flex;flex-direction:column;gap:6px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <img class="card-icon-sm" src="https://cdn-icons-png.flaticon.com/512/1076/1076819.png" alt="poll" onerror="this.style.display='none'"/>
+            <div class="card-title" style="color:var(--teal);">Missed Payment Poll</div>
+          </div>
+          <div class="card-body">SMS link opens poll on web/app. No Money / Forgot / Other. Penalty + instalment offer based on badge.</div>
+        </div>
+        <!-- Card 4 -->
+        <div class="card" style="border-top-color:var(--orange);display:flex;flex-direction:column;gap:6px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <img class="card-icon-sm" src="https://cdn-icons-png.flaticon.com/512/893/893257.png" alt="reminder" onerror="this.style.display='none'"/>
+            <div class="card-title" style="color:var(--orange);">Adaptive Reminders</div>
+          </div>
+          <div class="card-body">Reminder timing adjusts to borrower's history. Early for late-payers, near deadline for reliable ones.</div>
+        </div>
+        <!-- Card 5 -->
+        <div class="card" style="border-top-color:var(--purple);display:flex;flex-direction:column;gap:6px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <img class="card-icon-sm" src="https://cdn-icons-png.flaticon.com/512/2150/2150213.png" alt="upi" onerror="this.style.display='none'"/>
+            <div class="card-title" style="color:var(--purple);">UPI Payments &amp; Chain Alerts</div>
+          </div>
+          <div class="card-body">Pay via UPI Deep Link from web. Smart chain alert: 'You got ₹X from B — you also owe ₹Y to C.'</div>
+        </div>
+        <!-- Card 6 -->
+        <div class="card" style="border-top-color:var(--green);display:flex;flex-direction:column;gap:6px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <img class="card-icon-sm" src="https://cdn-icons-png.flaticon.com/512/1665/1665680.png" alt="dashboard" onerror="this.style.display='none'"/>
+            <div class="card-title" style="color:var(--green);">Lender Dashboard</div>
+          </div>
+          <div class="card-body">Money lent, recovered, at-risk users. 1-tap caller button appears for overdue borrowers.</div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">HACKMOL 7.0 × Google Developer Groups • NIT Jalandhar</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     SLIDE 5 — Tech Stack
+═════════════════════════════════════════════════════════ -->
+<div class="slide slide-dark" id="slide-5">
+  <div class="left-panel">
+    <img class="lp-icon" src="https://cdn-icons-png.flaticon.com/512/1055/1055687.png" alt="tech" onerror="this.style.display='none'"/>
+    <div class="lp-logo" style="font-size:1.8rem;">Tech<br/>Stack</div>
+    <div class="lp-sub">What we built with</div>
+    <div class="lp-team">Team Tech Freakers</div>
+    <div class="lp-hackmol">HACKMOL 7.0</div>
+  </div>
+  <div class="right-panel">
+    <div class="slide-header">
+      <div class="slide-title">Tech Stack Used</div>
+      <div class="slide-sub">Modern, Scalable, Production-Ready Technologies</div>
+      <div class="hackmol-tag">HACKMOL 7.0</div>
+    </div>
+    <div class="slide-body" style="gap:7px;">
+      <div class="grid-2" style="flex:1;gap:7px;">
+        <div class="tech-row" style="border-left-color:#7F52FF;">
+          <img src="https://cdn-icons-png.flaticon.com/512/3691/3691138.png" alt="kotlin" style="width:32px;height:32px;object-fit:contain;" onerror="this.style.display='none'"/>
+          <div>
+            <div class="tech-label">Android App</div>
+            <div class="tech-name" style="color:#A78BFA;">Kotlin</div>
+          </div>
+          <div class="tech-desc">Native Android — DMA, deep links, badges, caller shortcut</div>
+        </div>
+        <div class="tech-row" style="border-left-color:#000;">
+          <img src="https://cdn-icons-png.flaticon.com/512/5968/5968322.png" alt="nextjs" style="width:32px;height:32px;object-fit:contain;filter:invert(1);" onerror="this.style.display='none'"/>
+          <div>
+            <div class="tech-label">Web App</div>
+            <div class="tech-name" style="color:#E2E8F0;">Next.js (React)</div>
+          </div>
+          <div class="tech-desc">Agreement signing, UPI payments, poll flow — no app required</div>
+        </div>
+        <div class="tech-row" style="border-left-color:var(--green);">
+          <img src="https://cdn-icons-png.flaticon.com/512/5968/5968313.png" alt="supabase" style="width:32px;height:32px;object-fit:contain;" onerror="this.style.display='none'"/>
+          <div>
+            <div class="tech-label">Database</div>
+            <div class="tech-name" style="color:#4ADE80;">Supabase (PostgreSQL)</div>
+          </div>
+          <div class="tech-desc">Real-time DB, row-level security, agreement & transaction storage</div>
+        </div>
+        <div class="tech-row" style="border-left-color:#FFCA28;">
+          <img src="https://cdn-icons-png.flaticon.com/512/5968/5968853.png" alt="firebase" style="width:32px;height:32px;object-fit:contain;" onerror="this.style.display='none'"/>
+          <div>
+            <div class="tech-label">Authentication</div>
+            <div class="tech-name" style="color:#FCD34D;">Firebase Phone Auth</div>
+          </div>
+          <div class="tech-desc">OTP-based phone verification — ensures both parties are real</div>
+        </div>
+        <div class="tech-row" style="border-left-color:var(--red);">
+          <img src="https://cdn-icons-png.flaticon.com/512/2086/2086657.png" alt="sms" style="width:32px;height:32px;object-fit:contain;" onerror="this.style.display='none'"/>
+          <div>
+            <div class="tech-label">SMS Service</div>
+            <div class="tech-name" style="color:#F87171;">Fast2SMS API</div>
+          </div>
+          <div class="tech-desc">Agreement links, reminders, missed payment alerts via SMS</div>
+        </div>
+        <div class="tech-row" style="border-left-color:var(--teal);">
+          <img src="https://cdn-icons-png.flaticon.com/512/2150/2150213.png" alt="upi" style="width:32px;height:32px;object-fit:contain;" onerror="this.style.display='none'"/>
+          <div>
+            <div class="tech-label">Payments</div>
+            <div class="tech-name" style="color:#22D3EE;">UPI Deep Link</div>
+          </div>
+          <div class="tech-desc">Borrowers pay directly from web page — instant UPI settlement</div>
+        </div>
+        <div class="tech-row" style="border-left-color:#000;grid-column:1/-1;">
+          <img src="https://cdn-icons-png.flaticon.com/512/5968/5968885.png" alt="vercel" style="width:32px;height:32px;object-fit:contain;filter:invert(1);" onerror="this.style.display='none'"/>
+          <div>
+            <div class="tech-label">Hosting</div>
+            <div class="tech-name" style="color:#E2E8F0;">Vercel &nbsp;+&nbsp; Railway</div>
+          </div>
+          <div class="tech-desc" style="flex:1;">Vercel for Next.js web app · Railway for backend API · globally distributed</div>
+          <div style="font-size:0.72rem;color:var(--gold);font-weight:700;white-space:nowrap;">₹999/mo Premium</div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">HACKMOL 7.0 × Google Developer Groups • NIT Jalandhar</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     SLIDE 6 — Workflow Diagram
+═════════════════════════════════════════════════════════ -->
+<div class="slide slide-dark" id="slide-6">
+  <div class="left-panel">
+    <img class="lp-icon" src="https://cdn-icons-png.flaticon.com/512/3171/3171927.png" alt="workflow" onerror="this.style.display='none'"/>
+    <div class="lp-logo" style="font-size:1.6rem;">Workflow<br/>Diagram</div>
+    <div class="lp-sub">End-to-end DMA flow</div>
+    <div class="lp-team">Team Tech Freakers</div>
+    <div class="lp-hackmol">HACKMOL 7.0</div>
+  </div>
+  <div class="right-panel">
+    <div class="slide-header">
+      <div class="slide-title">Workflow Diagram</div>
+      <div class="slide-sub">Digital Mutual Agreement — End-to-End Flow</div>
+      <div class="hackmol-tag">HACKMOL 7.0</div>
+    </div>
+    <div class="slide-body" style="padding:16px 24px 10px;gap:0;">
+      <!-- Row 1: Lender chain -->
+      <div style="display:grid;grid-template-columns:1fr 28px 1fr 28px 1fr 28px 1fr;gap:0;align-items:center;margin-bottom:8px;">
+        <div class="flow-box flow-gold">
+          <img src="https://cdn-icons-png.flaticon.com/512/3658/3658427.png" alt="lender" onerror="this.style.display='none'"/>
+          Lender Creates<br/>Agreement
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box">
+          <img src="https://cdn-icons-png.flaticon.com/512/2086/2086657.png" alt="sms" onerror="this.style.display='none'"/>
+          SMS Sent via<br/>Fast2SMS
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box">
+          <img src="https://cdn-icons-png.flaticon.com/512/3665/3665251.png" alt="phone" onerror="this.style.display='none'"/>
+          Borrower<br/>Receives Link
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box" style="background:rgba(245,166,35,0.15);border-color:var(--gold);">
+          <img src="https://cdn-icons-png.flaticon.com/512/929/929683.png" alt="installed" onerror="this.style.display='none'"/>
+          App<br/>Installed?
+        </div>
+      </div>
+
+      <!-- Row 2: Branch YES / NO -->
+      <div style="display:grid;grid-template-columns:1fr 28px 1fr 28px 1fr;gap:0;align-items:center;margin-bottom:8px;padding:0 0 0 calc(75% + 0px);">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 60px 1fr;gap:0;align-items:center;margin-bottom:8px;">
+        <div class="flow-box flow-green">
+          <img src="https://cdn-icons-png.flaticon.com/512/1828/1828640.png" alt="yes" onerror="this.style.display='none'"/>
+          <span style="color:#4ADE80;font-size:0.68rem;display:block;margin-bottom:3px;">YES ✓</span>
+          App Opens &amp; Auto-fills<br/>User Info
+        </div>
+        <div style="text-align:center;font-size:0.68rem;color:var(--muted);padding:4px;">
+          ← YES &nbsp;|&nbsp; NO →
+        </div>
+        <div class="flow-box flow-teal">
+          <img src="https://cdn-icons-png.flaticon.com/512/1006/1006771.png" alt="web" onerror="this.style.display='none'"/>
+          <span style="color:#22D3EE;font-size:0.68rem;display:block;margin-bottom:3px;">NO ✗</span>
+          Web Page Opens<br/>Download CTA + Sign
+        </div>
+      </div>
+
+      <!-- Row 3: DMA Signed -->
+      <div style="text-align:center;font-size:0.9rem;color:var(--gold);margin-bottom:6px;">↓</div>
+      <div class="flow-box flow-gold" style="margin-bottom:8px;padding:10px 14px;">
+        <div style="display:flex;align-items:center;justify-content:center;gap:10px;">
+          <img src="https://cdn-icons-png.flaticon.com/512/1828/1828640.png" alt="sign" style="width:22px;height:22px;" onerror="this.style.display='none'"/>
+          <span style="font-size:0.85rem;font-weight:700;">✅ DMA Signed — Borrower reviews T&amp;C &amp; digitally signs. Agreement locked.</span>
+        </div>
+      </div>
+
+      <!-- Row 4: Repaid vs Missed -->
+      <div style="display:grid;grid-template-columns:1fr 60px 1fr;gap:0;align-items:center;">
+        <div class="flow-box flow-green" style="padding:12px 14px;">
+          <div style="display:flex;align-items:center;gap:8px;justify-content:center;margin-bottom:6px;">
+            <img src="https://cdn-icons-png.flaticon.com/512/2150/2150213.png" alt="upi" style="width:22px;height:22px;" onerror="this.style.display='none'"/>
+            <span style="color:#4ADE80;font-weight:700;">Repaid on Time</span>
+          </div>
+          <div style="font-size:0.72rem;color:var(--body);">Web page → Pay via UPI → Both confirm → 🏅 Badge Updated</div>
+        </div>
+        <div style="text-align:center;font-size:1.3rem;color:var(--muted);">⇆</div>
+        <div class="flow-box flow-red" style="padding:12px 14px;">
+          <div style="display:flex;align-items:center;gap:8px;justify-content:center;margin-bottom:6px;">
+            <img src="https://cdn-icons-png.flaticon.com/512/5261/5261964.png" alt="missed" style="width:22px;height:22px;" onerror="this.style.display='none'"/>
+            <span style="color:#F87171;font-weight:700;">Missed Payment</span>
+          </div>
+          <div style="font-size:0.72rem;color:var(--body);">SMS Link → Poll on Web/App → Penalty / Instalment → New due date → ⚠️ Auto-debit warning (simulated)</div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">HACKMOL 7.0 × Google Developer Groups • NIT Jalandhar</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     SLIDE 7 — Target Audience & Engagement
+═════════════════════════════════════════════════════════ -->
+<div class="slide slide-dark" id="slide-7">
+  <div class="left-panel">
+    <img class="lp-icon" src="https://cdn-icons-png.flaticon.com/512/1534/1534938.png" alt="audience" onerror="this.style.display='none'"/>
+    <div class="lp-logo" style="font-size:1.6rem;">Target<br/>Audience</div>
+    <div class="lp-sub">Who benefits most</div>
+    <div class="lp-team">Team Tech Freakers</div>
+    <div class="lp-hackmol">HACKMOL 7.0</div>
+  </div>
+  <div class="right-panel">
+    <div class="slide-header">
+      <div class="slide-title">Target Audience &amp; Engagement</div>
+      <div class="slide-sub">Who Uses MoneyLend and Why They Stay</div>
+      <div class="hackmol-tag">HACKMOL 7.0</div>
+    </div>
+    <div class="slide-body" style="gap:10px;">
+      <!-- Audience cards -->
+      <div style="font-size:0.78rem;font-weight:700;color:var(--navy);margin-bottom:2px;">Primary Users</div>
+      <div class="grid-3" style="gap:8px;flex-shrink:0;">
+        <div style="background:var(--navy3);border-radius:6px;border-top:3px solid var(--gold);padding:12px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;">
+          <img src="https://cdn-icons-png.flaticon.com/512/3659/3659899.png" alt="shopkeeper" style="width:36px;height:36px;object-fit:contain;" onerror="this.style.display='none'"/>
+          <div style="background:var(--gold);color:var(--navy);font-size:0.65rem;font-weight:700;padding:2px 8px;border-radius:10px;">Primary</div>
+          <div style="font-weight:700;font-size:0.82rem;color:var(--white);">Small Business Owners</div>
+          <div style="font-size:0.72rem;color:var(--body);">Shopkeepers, traders, and vendors who regularly extend credit to known customers.</div>
+        </div>
+        <div style="background:var(--navy3);border-radius:6px;border-top:3px solid var(--gold);padding:12px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;">
+          <img src="https://cdn-icons-png.flaticon.com/512/1534/1534938.png" alt="individual" style="width:36px;height:36px;object-fit:contain;" onerror="this.style.display='none'"/>
+          <div style="background:var(--gold);color:var(--navy);font-size:0.65rem;font-weight:700;padding:2px 8px;border-radius:10px;">Primary</div>
+          <div style="font-weight:700;font-size:0.82rem;color:var(--white);">Individual Lenders</div>
+          <div style="font-size:0.72rem;color:var(--body);">Friends and family members who lend money informally and want accountability.</div>
+        </div>
+        <div style="background:var(--navy3);border-radius:6px;border-top:3px solid var(--teal);padding:12px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;">
+          <img src="https://cdn-icons-png.flaticon.com/512/3665/3665251.png" alt="borrower" style="width:36px;height:36px;object-fit:contain;" onerror="this.style.display='none'"/>
+          <div style="background:var(--teal);color:var(--white);font-size:0.65rem;font-weight:700;padding:2px 8px;border-radius:10px;">Secondary</div>
+          <div style="font-weight:700;font-size:0.82rem;color:var(--white);">Borrowers</div>
+          <div style="font-size:0.72rem;color:var(--body);">Anyone receiving a loan — can use the web app without installing the Android app.</div>
+        </div>
+      </div>
+
+      <div style="font-size:0.78rem;font-weight:700;color:var(--gold);margin-top:4px;margin-bottom:2px;">Engagement Strategy</div>
+      <div class="grid-2" style="flex:1;gap:8px;">
+        <div style="background:var(--navy3);border-radius:6px;padding:10px 14px;display:flex;gap:10px;align-items:flex-start;">
+          <img src="https://cdn-icons-png.flaticon.com/512/2583/2583248.png" alt="badge" style="width:24px;height:24px;object-fit:contain;flex-shrink:0;margin-top:2px;" onerror="this.style.display='none'"/>
+          <div>
+            <div style="font-weight:700;font-size:0.8rem;color:var(--gold);margin-bottom:3px;">Reputation badges</div>
+            <div style="font-size:0.73rem;color:var(--body);">Create social incentive to repay — no one wants to lose their Gold badge</div>
+          </div>
+        </div>
+        <div style="background:var(--navy3);border-radius:6px;padding:10px 14px;display:flex;gap:10px;align-items:flex-start;">
+          <img src="https://cdn-icons-png.flaticon.com/512/2086/2086657.png" alt="sms" style="width:24px;height:24px;object-fit:contain;flex-shrink:0;margin-top:2px;" onerror="this.style.display='none'"/>
+          <div>
+            <div style="font-weight:700;font-size:0.8rem;color:var(--gold);margin-bottom:3px;">Public profiles + social proofs</div>
+            <div style="font-size:0.73rem;color:var(--body);">Drive organic trust ('12 loans repaid successfully')</div>
+          </div>
+        </div>
+        <div style="background:var(--navy3);border-radius:6px;padding:10px 14px;display:flex;gap:10px;align-items:flex-start;">
+          <img src="https://cdn-icons-png.flaticon.com/512/3176/3176366.png" alt="freemium" style="width:24px;height:24px;object-fit:contain;flex-shrink:0;margin-top:2px;" onerror="this.style.display='none'"/>
+          <div>
+            <div style="font-weight:700;font-size:0.8rem;color:var(--gold);margin-bottom:3px;">Free tier with ads</div>
+            <div style="font-size:0.73rem;color:var(--body);">Lowers barrier to entry; premium upgrades driven by dashboard features</div>
+          </div>
+        </div>
+        <div style="background:var(--navy3);border-radius:6px;padding:10px 14px;display:flex;gap:10px;align-items:flex-start;">
+          <img src="https://cdn-icons-png.flaticon.com/512/893/893257.png" alt="reminder" style="width:24px;height:24px;object-fit:contain;flex-shrink:0;margin-top:2px;" onerror="this.style.display='none'"/>
+          <div>
+            <div style="font-weight:700;font-size:0.8rem;color:var(--gold);margin-bottom:3px;">Adaptive reminders</div>
+            <div style="font-size:0.73rem;color:var(--body);">Reduce friction and increase on-time repayment rates organically</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">HACKMOL 7.0 × Google Developer Groups • NIT Jalandhar</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     SLIDE 8 — Future Scope & Economic Viability
+═════════════════════════════════════════════════════════ -->
+<div class="slide slide-dark" id="slide-8">
+  <div class="left-panel">
+    <img class="lp-icon" src="https://cdn-icons-png.flaticon.com/512/1011/1011540.png" alt="future" onerror="this.style.display='none'"/>
+    <div class="lp-logo" style="font-size:1.5rem;">Future<br/>Scope</div>
+    <div class="lp-sub">Where MoneyLend<br/>goes next</div>
+    <div class="lp-team">Team Tech Freakers</div>
+    <div class="lp-hackmol">HACKMOL 7.0</div>
+  </div>
+  <div class="right-panel">
+    <div class="slide-header">
+      <div class="slide-title">Future Scope &amp; Economic Viability</div>
+      <div class="slide-sub">Scaling MoneyLend into a FinTech Powerhouse</div>
+      <div class="hackmol-tag">HACKMOL 7.0</div>
+    </div>
+    <div class="slide-body" style="gap:8px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;flex:1;">
+        <!-- Left: Roadmap -->
+        <div style="background:var(--navy3);border-radius:8px;border-top:3px solid var(--gold);padding:14px 16px;display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px;">
+            <img src="https://cdn-icons-png.flaticon.com/512/1011/1011540.png" alt="roadmap" style="width:20px;height:20px;" onerror="this.style.display='none'"/>
+            <span style="font-weight:700;font-size:0.85rem;color:var(--gold);">Roadmap</span>
+          </div>
+          <div class="roadmap-item">
+            <div class="roadmap-dot" style="background:var(--green);color:white;font-size:0.6rem;">P1</div>
+            <div>
+              <div style="font-weight:700;font-size:0.78rem;color:var(--green);">Phase 1 (Now)</div>
+              <div style="font-size:0.72rem;color:var(--body);">KYC via Aadhaar/PAN &nbsp;·&nbsp; Bank integration for auto-debit (RBI-compliant)</div>
+            </div>
+          </div>
+          <div class="roadmap-item">
+            <div class="roadmap-dot" style="background:var(--teal);color:white;font-size:0.6rem;">P2</div>
+            <div>
+              <div style="font-weight:700;font-size:0.78rem;color:var(--teal);">Phase 2</div>
+              <div style="font-size:0.72rem;color:var(--body);">Legal partnerships → DMAs court-admissible &nbsp;·&nbsp; Credit bureau integration (CIBIL)</div>
+            </div>
+          </div>
+          <div class="roadmap-item">
+            <div class="roadmap-dot" style="background:var(--purple);color:white;font-size:0.6rem;">P3</div>
+            <div>
+              <div style="font-weight:700;font-size:0.78rem;color:#A78BFA;">Phase 3</div>
+              <div style="font-size:0.72rem;color:var(--body);">Group lending / Chit fund support &nbsp;·&nbsp; AI-based default risk prediction</div>
+            </div>
+          </div>
+          <div class="roadmap-item">
+            <div class="roadmap-dot" style="background:var(--orange);color:white;font-size:0.6rem;">↑</div>
+            <div>
+              <div style="font-weight:700;font-size:0.78rem;color:var(--orange);">Scale</div>
+              <div style="font-size:0.72rem;color:var(--body);">Escrow bank as neutral guarantor &nbsp;·&nbsp; Open lender marketplace</div>
+            </div>
+          </div>
+        </div>
+        <!-- Right: Economic + Risks -->
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="background:var(--navy3);border-radius:8px;border-top:3px solid var(--green);padding:12px 16px;flex:1;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+              <img src="https://cdn-icons-png.flaticon.com/512/2271/2271050.png" alt="money" style="width:20px;height:20px;" onerror="this.style.display='none'"/>
+              <span style="font-weight:700;font-size:0.85rem;color:var(--green);">Economic Viability</span>
+            </div>
+            <div style="font-size:0.73rem;color:var(--body);line-height:1.8;">
+              ✓ Free tier with ads → zero barrier to entry<br/>
+              ✓ Premium ₹999/month → no ads + analytics<br/>
+              ✓ Revenue covers: SMS API, Supabase, Vercel<br/>
+              ✓ Ad revenue scales with user growth
+            </div>
+          </div>
+          <div style="background:var(--navy3);border-radius:8px;border-top:3px solid var(--red);padding:12px 16px;flex:1;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+              <img src="https://cdn-icons-png.flaticon.com/512/5261/5261964.png" alt="risk" style="width:20px;height:20px;" onerror="this.style.display='none'"/>
+              <span style="font-weight:700;font-size:0.85rem;color:var(--red);">Risks &amp; Mitigation</span>
+            </div>
+            <div style="font-size:0.72rem;line-height:1.8;">
+              <span style="color:var(--red);font-weight:700;">Data misuse</span><span style="color:var(--body);"> → Encryption + minimal data</span><br/>
+              <span style="color:var(--red);font-weight:700;">Fake agreements</span><span style="color:var(--body);"> → OTP identity at signing</span><br/>
+              <span style="color:var(--red);font-weight:700;">No legal force</span><span style="color:var(--body);"> → Social accountability now; KYC + legal partners later</span><br/>
+              <span style="color:var(--red);font-weight:700;">Spam requests</span><span style="color:var(--body);"> → Daily limit per user</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer" style="text-align:center;padding:8px;">
+      Built with ❤️ by Team Tech Freakers &nbsp;•&nbsp; HACKMOL 7.0 × NIT Jalandhar
+    </div>
+  </div>
+</div>
+
+</div><!-- end #stage -->
+
+<script>
+  const totalSlides = 8;
+  let current = 1;
+
+  function showSlide(n) {
+    document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+    current = Math.max(1, Math.min(n, totalSlides));
+    document.getElementById('slide-' + current).classList.add('active');
+    document.getElementById('slide-counter').textContent = current + ' / ' + totalSlides;
+    document.getElementById('progress-fill').style.width = (current / totalSlides * 100) + '%';
+  }
+
+  function nextSlide() { showSlide(current + 1); }
+  function prevSlide() { showSlide(current - 1); }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')                    { e.preventDefault(); prevSlide(); }
+  });
+
+  // Touch swipe
+  let startX = 0;
+  document.addEventListener('touchstart', e => { startX = e.touches[0].clientX; });
+  document.addEventListener('touchend',   e => {
+    const dx = e.changedTouches[0].clientX - startX;
+    if (Math.abs(dx) > 50) dx < 0 ? nextSlide() : prevSlide();
+  });
+
+  showSlide(1);
+</script>
+</body>
+</html>
