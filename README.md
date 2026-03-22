@@ -9,9 +9,9 @@
 | Field | Details |
 |---|---|
 | **Team Name** | Tech Freakers |
-| **Members** | [Member 1 Name] · [Member 2 Name] · [Member 3 Name] · [Member 4 Name] |
-| **College** | [College Name] |
-| **City, State** | [City], [State] |
+| **Members** | Gurkirat Singh Lohat · Gurleen Kaur · Gagandeep Singh · Gurmannat Singh |
+| **College** | Guru Nanak Dev Engineering College, Ludhiana |
+| **City, State** | Ludhiana, Punjab |
 
 ---
 
@@ -72,13 +72,14 @@ Existing banking and fintech solutions (banks, NBFCs, apps like KhataBook) eithe
 
 ### Repayment Flow
 8. As the deadline approaches, smart reminders are sent via SMS (timing adjusted per borrower's repayment history)
-9. Borrower clicks reminder link → lands on payment page → pays via **UPI**
+9. Borrower clicks reminder link → lands on **MoneyLend web page** showing loan details (amount borrowed, lender name, deadline) → taps **Pay Now** button → completes payment via **UPI Deep Link**
 10. Both lender and borrower confirm the transaction → **Reputation Badge updates** for the borrower
 
 ### Missed Payment Flow
-11. If deadline is missed → borrower receives a **poll SMS** asking why
-12. Based on response + reputation badge status → penalty applied, instalment option offered, or new deadline assigned
-13. Persistent defaults → auto-debit warning issued *(simulated in MVP; requires RBI integration in production)*
+11. If deadline is missed → borrower receives an **SMS with a link** (not the poll itself)
+12. Clicking the link → opens the **poll on the web page** (or inside the MoneyLend app if installed), asking why payment was missed: *No Money / Forgot / Other / (Ignored)*
+13. Based on poll response + reputation badge status → penalty applied, instalment option offered, or new deadline assigned
+14. Persistent defaults → auto-debit warning issued *(simulated in MVP; requires RBI integration in production)*
 
 ---
 
@@ -148,12 +149,12 @@ When a borrower misses a deadline, they receive an SMS with a link that takes th
 |---|---|
 | Android App | Kotlin |
 | Web App | Next.js (React) |
-| Backend/API | Node.js / Next.js API Routes |
-| Database | [e.g., Firebase / PostgreSQL / Supabase] |
+| Backend/API | Next.js API Routes |
+| Database | Supabase (PostgreSQL) |
 | SMS Service | Fast2SMS API |
-| Payments | UPI Deep Link / Razorpay (Web) |
-| Authentication | [e.g., Firebase Auth / OTP-based] |
-| Hosting | [e.g., Vercel / Railway / AWS] |
+| Payments | UPI Deep Link |
+| Authentication | Firebase Phone Authentication (OTP) |
+| Hosting | Vercel (Web) · Railway (Backend) |
 
 ---
 
@@ -245,10 +246,10 @@ Pre-fills user info                                  (Download CTA + Web sign op
 ## 💰 Economic Viability
 
 - **Free tier**: Supports basic lending with ads → zero barrier to entry
-- **Premium tier**: ₹[X]/month → removes ads, advanced analytics, higher SMS quota
+- **Premium tier**: ₹999/month base (scales with usage) → removes ads, advanced analytics, higher SMS quota, priority support
 - **Revenue sources**: Ad revenue (free users) + Premium subscriptions
-- **Cost coverage**: SMS API (Fast2SMS), cloud hosting, database storage
-- **Scalable**: As user base grows, ad revenue scales; premium conversion expected from business users who need advanced dashboard features
+- **Cost coverage**: SMS API (Fast2SMS), Supabase database, Vercel + Railway hosting
+- **Scalable**: As user base grows, ad revenue scales; premium conversion expected from business owners who rely on the dashboard daily
 
 ---
 
